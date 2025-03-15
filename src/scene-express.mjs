@@ -35,6 +35,16 @@ Hooks.once('init', async function () {
     type: Boolean,
     default: 'false'
   });
+
+  try {
+    await FilePicker.createDirectory("data", `worlds/${ game.world.id }/scenes/`);
+  } catch (err) {
+    if (err.message.startsWith('EEXIST:')) {
+      console.log("Scene Express | Scenes directory already exists in world, continuing...");
+    } else {
+      throw err;
+    }
+  }
 });
 
 Hooks.once('ready', async function () {
