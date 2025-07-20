@@ -1,8 +1,6 @@
 const RE_TO_SPACE = /[_+]/g;
 
-Hooks.once('init', async function () {
-  console.log("Scene Express | Initializing");
-
+Hooks.once('init', () => {
   game.settings.register('scene-express', 'enableSceneExpress', {
     name: 'SCENE_EXPRESS.ENABLE',
     hint: 'SCENE_EXPRESS.ENABLE_HINT',
@@ -35,28 +33,28 @@ Hooks.once('init', async function () {
     type: Boolean,
     default: 'false'
   });
+});
+
+Hooks.once("setup", async () => {
+  if (!game.settings.get("scene-express", "enableSceneExpress") || !game.user.isGM) return;
 
   try {
-    await FilePicker.createDirectory("data", `worlds/${ game.world.id }/scenes/`);
+    await foundry.applications.apps.FilePicker.implementation.createDirectory("data", `worlds/${ game.world.id }/scenes/`);
   } catch (err) {
-    if (err.message.startsWith('EEXIST:')) {
-      console.log("Scene Express | Scenes directory already exists in world, continuing...");
-    } else {
+    if (!err.message.startsWith('EEXIST:')) {
       throw err;
     }
   }
-});
-
-Hooks.once('ready', async function () {
-  game.scene_express_drop = await new DragDrop({
-    callbacks: {
-      drop: handleDrop
-    }
+  Hooks.once('ready', async () => {
+    game.scene_express_drop = await new foundry.applications.ux.DragDrop.implementation({
+      callbacks: {
+        drop: handleDrop
+      }
+    });
   });
-  Hooks.on("renderSidebarTab", onRenderSidebarTab);
-  ui.sidebar.tabs.scenes.render();
-  console.log("Scene Express | Ready");
-});
+
+  Hooks.on("activateAbstractSidebarTab", onRenderSidebarTab);
+})
 
 const handleFile = async (file) => {
   if (!Object.values(CONST.IMAGE_FILE_EXTENSIONS).includes(file.type)) {
@@ -66,6 +64,8 @@ const handleFile = async (file) => {
     );
     return {}
   }
+
+  const fp = foundry.applications.apps.FilePicker.implementation;
 
   const fileExistsBehavior = game.settings.get("scene-express", "fileExistsBehavior");
 
@@ -81,23 +81,20 @@ const handleFile = async (file) => {
 
   const scenesLocation = `worlds/${ game.world.id }/scenes/`;
 
-  const browser = await FilePicker.browse("data", scenesLocation);
+  const browser = await fp.browse("data", scenesLocation);
   if (browser.files.includes(scenesLocation + file.name) && fileExistsBehavior === 1) {
-    console.log("File already exists and fileExistsBehavior is set to 3, skipping");
     ui.notifications.error(
       game.i18n.format('SCENE_EXPRESS.FILE_EXISTS', {fileName: file.name}),
       {permanent: true}
     );
     return {}
   } else if (browser.files.includes(scenesLocation + file.name) && fileExistsBehavior === 2) {
-    console.log("File already exists, selecting existing file");
     return {
       file: file,
       path: scenesLocation + file.name
     };
   } else if (!browser.files.includes(scenesLocation + file.name) || fileExistsBehavior === 3) {
-    console.log("File does not exist or fileExistsBehavior is set to 3, uploading");
-    const response = await FilePicker.upload(
+    const response = await fp.upload(
       "data",
       scenesLocation,
       file
@@ -106,21 +103,18 @@ const handleFile = async (file) => {
       file: file,
       path: response.path
     };
-  } else {
-    console.log("Unhandled case");
-    return {}
   }
+  return {}
 }
 
 const createScene = async (savedFile, active = false) => {
-  if (savedFile === {}) return;
+  if (!Object.keys(savedFile).length) return;
 
   const fileExistsBehavior = game.settings.get("scene-express", "fileExistsBehavior");
 
   const scene_name = savedFile.file.name.split(".")[0].replace(RE_TO_SPACE, " ")
   let scene = game.scenes.find(scene => scene.name === scene_name);
   if (scene && fileExistsBehavior === 1) {
-    console.log("Scene already exists and fileExistsBehavior is set to 1, skipping");
     ui.notifications.error(
       game.i18n.format('SCENE_EXPRESS.SCENE_EXISTS', {sceneName: scene_name }),
       {permanent: true}
@@ -129,7 +123,6 @@ const createScene = async (savedFile, active = false) => {
   }
 
   if(scene && fileExistsBehavior >= 2) {
-    console.log("Scene already exists and fileExistsBehavior is set to 2 or 3, updating");
     await scene.update(    {
       name: scene_name,
       active: false,
@@ -144,7 +137,6 @@ const createScene = async (savedFile, active = false) => {
       fogExploration: false,
     });
   } else if (!scene) {
-    console.log("Scene does not exist, creating");
     const file_name = savedFile.file.name.split(".")[0];
     scene = await getDocumentClass("Scene").create(
       {
@@ -170,8 +162,7 @@ const handleDrop = async (event) => {
   event.preventDefault();
   event.stopPropagation();
 
-  const active = event.dataTransfer.files.length === 1 &&
-    game.settings.get("scene-express", "activate");
+  const active = event.dataTransfer.files.length === 1 && game.settings.get("scene-express", "activate");
 
   const savedFiles = Array.from(event.dataTransfer.files).map(
     async file => await handleFile(file)
@@ -181,17 +172,14 @@ const handleDrop = async (event) => {
   }
 }
 
-const onRenderSidebarTab = async (app, html, _) => {
+const onRenderSidebarTab = async (tab) => {
+  const { element, id } = tab;
   // Exit early if necessary;
-  if (app.tabName !== "scenes") return;
+  if (id !== "scenes") return;
+  if (element.querySelector("#scene-express-dropzone")) return;
 
-  const enableSceneExpress = game.settings.get("scene-express", "enableSceneExpress");
-  if (!enableSceneExpress) {
-    return;
-  }
-
-  let footer = html.find(".directory-footer");
-  const content = await renderTemplate("modules/scene-express/templates/dropzone.html", {});
-  footer.before(content);
-  game.scene_express_drop.bind(document.getElementById("scene-express-dropzone"));
+  const footer = element.querySelector(".directory-footer");
+  const content = await foundry.applications.handlebars.renderTemplate("modules/scene-express/templates/dropzone.html");
+  footer.insertAdjacentHTML("beforebegin", content);
+  game.scene_express_drop.bind(element.querySelector("#scene-express-dropzone"));
 }
