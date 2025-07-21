@@ -28,5 +28,5 @@ body {
 #scene-express-dropzone.dragover {
   background: var(--scene-express-hover-background-color);
   color: var(--scene-express-hover-text-color);
-  border-color: var(--scene-express-hover-border-color)
+  border-color: var(--scene-express-hover-border-color);
 }

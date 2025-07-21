@@ -1,0 +1,12 @@
+{
+  "experimentalOperatorPosition": "start",
+  "printWidth": 120,
+  "singleQuote": false,
+  "trailingComma": "none",
+  "overrides": [
+    {
+      "files": ["*.css", ".less"],
+      "options": { "tabWidth": 2, "useTabs": false }
+    }
+  ]
+}
