@@ -1,3 +1,9 @@
+body {
+  --scene-express-hover-background-color: var(--color-warm-2);
+  --scene-express-hover-text-color: var(--color-light-1);
+  --scene-express-hover-border-color: var(--color-light-3);
+}
+
 .theme-dark #scene-express-dropzone {
   --scene-express-border-color: var(--color-light-5);
 }
@@ -16,4 +22,11 @@
   justify-content: center;
   align-items: center;
   text-align: center;
+  transition: 0.5s;
+}
+
+#scene-express-dropzone.dragover {
+  background: var(--scene-express-hover-background-color);
+  color: var(--scene-express-hover-text-color);
+  border-color: var(--scene-express-hover-border-color)
 }

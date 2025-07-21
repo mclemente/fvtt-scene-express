@@ -152,6 +152,7 @@ const createScene = async (savedFile, active = false) => {
 const handleDrop = async (event) => {
   event.preventDefault();
   event.stopPropagation();
+  event.currentTarget.classList.remove("dragover");
 
   const active = event.dataTransfer.files.length === 1 && game.settings.get("scene-express", "activate");
 
@@ -172,5 +173,8 @@ const onRenderSidebarTab = async (tab) => {
   const footer = element.querySelector(".directory-footer");
   const content = await foundry.applications.handlebars.renderTemplate("modules/scene-express/templates/dropzone.html");
   footer.insertAdjacentHTML("beforebegin", content);
-  game.scene_express_drop.bind(element.querySelector("#scene-express-dropzone"));
+  const dropzone = element.querySelector("#scene-express-dropzone");
+  game.scene_express_drop.bind(dropzone);
+  dropzone.addEventListener("dragenter", (ev) => dropzone.classList.add("dragover"));
+  dropzone.addEventListener("dragleave", (ev) => dropzone.classList.remove("dragover"));
 }
