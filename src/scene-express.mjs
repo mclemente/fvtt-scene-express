@@ -157,11 +157,8 @@ const handleDrop = async (event) => {
 	event.currentTarget.classList.remove("dragover");
 
 	const active = event.dataTransfer.files.length === 1 && game.settings.get("scene-express", "activate");
-
-	const savedFiles = Array.from(event.dataTransfer.files).map(
-		async file => await handleFile(file)
-	);
-	for await (const savedFile of savedFiles) {
+	const savedFiles = await Promise.all(Array.from(event.dataTransfer.files).map(handleFile));
+	for (const savedFile of savedFiles) {
 		await createScene(savedFile, active);
 	}
 }
