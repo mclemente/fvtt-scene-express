@@ -1,36 +1,36 @@
 const RE_TO_SPACE = /[_+]/g;
 
-Hooks.once('init', () => {
-	game.settings.register('scene-express', 'folderPath', {
-		name: 'SCENE_EXPRESS.FOLDER_PATH',
-		hint: 'SCENE_EXPRESS.FOLDER_PATH_HINT',
-		scope: 'world',
+Hooks.once("init", () => {
+	game.settings.register("scene-express", "folderPath", {
+		name: "SCENE_EXPRESS.FOLDER_PATH",
+		hint: "SCENE_EXPRESS.FOLDER_PATH_HINT",
+		scope: "world",
 		config: true,
 		type: String,
 		default: `worlds/${ game.world.id }/scenes/`,
-		filePicker: 'folder'
+		filePicker: "folder"
 	});
-	game.settings.register('scene-express', 'fileExistsBehavior', {
-		name: 'SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR',
-		hint: 'SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_HINT',
-		scope: 'world',
+	game.settings.register("scene-express", "fileExistsBehavior", {
+		name: "SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR",
+		hint: "SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_HINT",
+		scope: "world",
 		config: true,
 		type: Number,
 		choices: {
-			1: 'SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_1',
-			2: 'SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_2',
-			3: 'SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_3',
+			1: "SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_1",
+			2: "SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_2",
+			3: "SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_3",
 		},
 		default: 1
 	});
 
-	game.settings.register('scene-express', 'activate', {
-		name: 'SCENE_EXPRESS.IMMEDIATELY_ACTIVE',
-		hint: 'SCENE_EXPRESS.IMMEDIATELY_ACTIVE_HINT',
-		scope: 'world',
+	game.settings.register("scene-express", "activate", {
+		name: "SCENE_EXPRESS.IMMEDIATELY_ACTIVE",
+		hint: "SCENE_EXPRESS.IMMEDIATELY_ACTIVE_HINT",
+		scope: "world",
 		config: true,
 		type: Boolean,
-		default: 'false'
+		default: "false"
 	});
 });
 
@@ -38,16 +38,16 @@ Hooks.once("setup", async () => {
 	if (!game.user.isGM) return;
 
 	try {
-		const folderPath = game.settings.get('scene-express', 'folderPath');
+		const folderPath = game.settings.get("scene-express", "folderPath");
 		if (folderPath === `worlds/${ game.world.id }/scenes/`) {
 			await foundry.applications.apps.FilePicker.implementation.createDirectory("data", folderPath);
 		}
 	} catch (err) {
-		if (!err.message.startsWith('EEXIST:')) {
+		if (!err.message.startsWith("EEXIST:")) {
 			throw err;
 		}
 	}
-	Hooks.once('ready', async () => {
+	Hooks.once("ready", async () => {
 		game.scene_express_drop = await new foundry.applications.ux.DragDrop.implementation({
 			callbacks: {
 				drop: handleDrop
@@ -61,7 +61,7 @@ Hooks.once("setup", async () => {
 const handleFile = async (file) => {
 	if (!Object.values(CONST.IMAGE_FILE_EXTENSIONS).includes(file.type)) {
 		ui.notifications.error(
-			game.i18n.format('SCENE_EXPRESS.UNHANDLED_IMAGE', {fileName: file.name}),
+			game.i18n.format("SCENE_EXPRESS.UNHANDLED_IMAGE", {fileName: file.name}),
 			{permanent: true}
 		);
 		return {}
@@ -75,18 +75,18 @@ const handleFile = async (file) => {
 	let scene = game.scenes.find(scene => scene.name === futur_scene_name);
 	if (scene && fileExistsBehavior === 1) {
 		ui.notifications.error(
-			game.i18n.format('SCENE_EXPRESS.SCENE_EXISTS', {sceneName: futur_scene_name }),
+			game.i18n.format("SCENE_EXPRESS.SCENE_EXISTS", {sceneName: futur_scene_name }),
 			{permanent: true}
 		);
 		return {}
 	}
 
-	const scenesLocation = game.settings.get('scene-express', 'folderPath');
+	const scenesLocation = game.settings.get("scene-express", "folderPath");
 
 	const browser = await fp.browse("data", scenesLocation);
 	if (browser.files.includes(scenesLocation + file.name) && fileExistsBehavior === 1) {
 		ui.notifications.error(
-			game.i18n.format('SCENE_EXPRESS.FILE_EXISTS', {fileName: file.name}),
+			game.i18n.format("SCENE_EXPRESS.FILE_EXISTS", {fileName: file.name}),
 			{permanent: true}
 		);
 		return {}
@@ -118,7 +118,7 @@ const createScene = async (savedFile, active = false) => {
 	let scene = game.scenes.find(scene => scene.name === scene_name);
 	if (scene && fileExistsBehavior === 1) {
 		ui.notifications.error(
-			game.i18n.format('SCENE_EXPRESS.SCENE_EXISTS', {sceneName: scene_name }),
+			game.i18n.format("SCENE_EXPRESS.SCENE_EXISTS", {sceneName: scene_name }),
 			{permanent: true}
 		);
 		return;
