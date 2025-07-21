@@ -3,6 +3,8 @@
     "TITLE": "Scene Express",
     "ENABLE": "Enable Scene Express",
     "ENABLE_HINT": "Control whether Scene Express is enabled or not.",
+    "FOLDER_PATH": "Folder Path",
+    "FOLDER_PATH_HINT": "The folder that the module will upload the images to.",
     "FILE_EXISTS_BEHAVIOR": "Handling of Existing Image",
     "FILE_EXISTS_BEHAVIOR_HINT": "What to do when an image with the same name already exists.",
     "FILE_EXISTS_BEHAVIOR_1": "Stop & Notify error",

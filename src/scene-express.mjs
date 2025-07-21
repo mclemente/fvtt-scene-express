@@ -1,16 +1,15 @@
 const RE_TO_SPACE = /[_+]/g;
 
 Hooks.once('init', () => {
-	game.settings.register('scene-express', 'enableSceneExpress', {
-		name: 'SCENE_EXPRESS.ENABLE',
-		hint: 'SCENE_EXPRESS.ENABLE_HINT',
+	game.settings.register('scene-express', 'folderPath', {
+		name: 'SCENE_EXPRESS.FOLDER_PATH',
+		hint: 'SCENE_EXPRESS.FOLDER_PATH_HINT',
 		scope: 'world',
 		config: true,
-		requiresReload: true,
-		type: Boolean,
-		default: true
+		type: String,
+		default: `worlds/${ game.world.id }/scenes/`,
+		filePicker: 'folder'
 	});
-
 	game.settings.register('scene-express', 'fileExistsBehavior', {
 		name: 'SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR',
 		hint: 'SCENE_EXPRESS.FILE_EXISTS_BEHAVIOR_HINT',
@@ -36,10 +35,13 @@ Hooks.once('init', () => {
 });
 
 Hooks.once("setup", async () => {
-	if (!game.settings.get("scene-express", "enableSceneExpress") || !game.user.isGM) return;
+	if (!game.user.isGM) return;
 
 	try {
-		await foundry.applications.apps.FilePicker.implementation.createDirectory("data", `worlds/${ game.world.id }/scenes/`);
+		const folderPath = game.settings.get('scene-express', 'folderPath');
+		if (folderPath === `worlds/${ game.world.id }/scenes/`) {
+			await foundry.applications.apps.FilePicker.implementation.createDirectory("data", folderPath);
+		}
 	} catch (err) {
 		if (!err.message.startsWith('EEXIST:')) {
 			throw err;
@@ -79,7 +81,7 @@ const handleFile = async (file) => {
 		return {}
 	}
 
-	const scenesLocation = `worlds/${ game.world.id }/scenes/`;
+	const scenesLocation = game.settings.get('scene-express', 'folderPath');
 
 	const browser = await fp.browse("data", scenesLocation);
 	if (browser.files.includes(scenesLocation + file.name) && fileExistsBehavior === 1) {
