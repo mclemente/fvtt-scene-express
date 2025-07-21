@@ -138,14 +138,14 @@ const createScene = async (savedFile, active = false) => {
 		grid: {type: 0},
 		tokenVision: true,
 		fogExploration: false,
-		height: img.height,
-		width: img.width
+		width: img.naturalWidth || 4000,
+		height: img.naturalHeight || 3000
 	}
 
 	if(scene && fileExistsBehavior >= 2) {
 		await scene.update(sceneData);
 	} else if (!scene) {
-		scene = await getDocumentClass("Scene").create({	active, ...sceneData });
+		scene = await getDocumentClass("Scene").create({ active, ...sceneData });
 	}
 	const data = await scene.createThumbnail();
 	await scene.update({thumb: data.thumb}, {diff: false});
