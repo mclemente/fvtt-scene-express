@@ -138,7 +138,7 @@ const createScene = async (savedFile, active = false) => {
     if (scene && fileExistsBehavior >= 2) {
       await scene.update(sceneData);
     } else if (!scene) {
-      scene = await getDocumentClass("Scene").create({ active, ...sceneData });
+      scene = await getDocumentClass("Scene").create({ ...sceneData, active });
     }
     const data = await scene.createThumbnail();
     await scene.update({ thumb: data.thumb }, { diff: false });
