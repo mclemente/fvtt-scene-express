@@ -119,40 +119,31 @@ const createScene = async (savedFile, active = false) => {
       game.i18n.format('SCENE_EXPRESS.SCENE_EXISTS', {sceneName: scene_name }),
       {permanent: true}
     );
-    return {}
+    return;
+  }
+
+  const img = new Image();
+  img.src = savedFile.path;
+  const sceneData = {
+    name: scene_name,
+    active: false,
+    navigation: true,
+    background: {
+      "src": savedFile.path,
+    },
+    padding: 0,
+    backgroundColor: "#000000",
+    grid: {type: 0},
+    tokenVision: true,
+    fogExploration: false,
+    height: img.height,
+    width: img.width
   }
 
   if(scene && fileExistsBehavior >= 2) {
-    await scene.update(    {
-      name: scene_name,
-      active: false,
-      navigation: true,
-      background: {
-        "src": savedFile.path,
-      },
-      padding: 0,
-      backgroundColor: "#000000",
-      grid: {type: 0},
-      tokenVision: true,
-      fogExploration: false,
-    });
+    await scene.update(sceneData);
   } else if (!scene) {
-    const file_name = savedFile.file.name.split(".")[0];
-    scene = await getDocumentClass("Scene").create(
-      {
-        name: scene_name,
-        active: active,
-        navigation: true,
-        background: {
-          "src": savedFile.path,
-        },
-        padding: 0,
-        backgroundColor: "#000000",
-        grid: {type: 0},
-        tokenVision: true,
-        fogExploration: false,
-      }
-    );
+    scene = await getDocumentClass("Scene").create({  active, ...sceneData });
   }
   const data = await scene.createThumbnail();
   await scene.update({thumb: data.thumb}, {diff: false});
