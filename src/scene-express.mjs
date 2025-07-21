@@ -118,29 +118,31 @@ const createScene = async (savedFile, active = false) => {
 
   const img = new Image();
   img.src = savedFile.path;
-  const sceneData = {
-    name: scene_name,
-    active: false,
-    navigation: true,
-    background: {
-      src: savedFile.path
-    },
-    padding: 0,
-    backgroundColor: "#000000",
-    grid: { type: 0 },
-    tokenVision: true,
-    fogExploration: false,
-    width: img.naturalWidth || 4000,
-    height: img.naturalHeight || 3000
-  };
+  img.onload = async () => {
+    const sceneData = {
+      name: scene_name,
+      active: false,
+      navigation: true,
+      background: {
+        src: savedFile.path
+      },
+      padding: 0,
+      backgroundColor: "#000000",
+      grid: { type: 0 },
+      tokenVision: true,
+      fogExploration: false,
+      width: img.width || 4000,
+      height: img.height || 3000
+    };
 
-  if (scene && fileExistsBehavior >= 2) {
-    await scene.update(sceneData);
-  } else if (!scene) {
-    scene = await getDocumentClass("Scene").create({ active, ...sceneData });
-  }
-  const data = await scene.createThumbnail();
-  await scene.update({ thumb: data.thumb }, { diff: false });
+    if (scene && fileExistsBehavior >= 2) {
+      await scene.update(sceneData);
+    } else if (!scene) {
+      scene = await getDocumentClass("Scene").create({ active, ...sceneData });
+    }
+    const data = await scene.createThumbnail();
+    await scene.update({ thumb: data.thumb }, { diff: false });
+  };
 };
 
 const handleDrop = async (event) => {
